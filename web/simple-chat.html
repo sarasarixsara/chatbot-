@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Chat E-commerce (Elegante)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #0f1115;
+      color: #e0e0e0;
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: #00bcd4;
+    }
+
+    #log {
+      background-color: #1a1d23;
+      border-radius: 10px;
+      padding: 1rem;
+      height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    #log .me, #log .bot {
+      max-width: 75%;
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #log .me {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #00c853, #64dd17);
+      color: #fff;
+    }
+
+    #log .bot {
+      align-self: flex-start;
+      background: linear-gradient(135deg, #2962ff, #00b0ff);
+      color: #fff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-container {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    #msg {
+      flex: 1;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #2c2f36;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    #msg::placeholder {
+      color: #888;
+    }
+
+    #send {
+      padding: 0.8rem 1.2rem;
+      background-color: #00bcd4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    #send:hover {
+      background-color: #0097a7;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat E-commerce</h1>
+  <div id="log"></div>
+
+  <div class="input-container">
+    <input id="msg" placeholder="Escribe aquí..." />
+    <button id="send">Enviar</button>
+  </div>
+
+  <script>
+    const BOT_URL = "http://localhost:8000/chat"; // Ajusta si tu endpoint cambia
+    const input = document.getElementById("msg");
+    const log = document.getElementById("log");
+    const btn = document.getElementById("send");
+
+    function add(line, who) {
+      const p = document.createElement("div");
+      p.className = who;
+      p.textContent = (who === "me" ? "Tú: " : "Bot: ") + line;
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    }
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+      add(text, "me");
+      input.value = "";
+
+      try {
+        const response = await fetch(BOT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, user_id: 1 })
+        });
+
+        const data = await response.json();
+        add(data.reply || "(sin respuesta)", "bot");
+      } catch (error) {
+        add("Error conectando al bot: " + error.message, "bot");
+      }
+    }
+
+    btn.onclick = send;
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") send();
+    });
+  </script>
+</body>
+</html>
